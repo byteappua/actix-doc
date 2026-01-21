@@ -3,6 +3,7 @@
 /server/**/*.rs.bk
 /server/Cargo.lock
 /server/.env
+/server/static/
 
 # Node / Next.js
 /client/node_modules/

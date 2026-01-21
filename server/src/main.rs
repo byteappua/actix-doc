@@ -30,6 +30,7 @@ async fn main() -> std::io::Result<()> {
             .service(docs::create_doc)
             .service(docs::update_doc)
             .service(docs::delete_doc)
+            .service(actix_files::Files::new("/", "./static").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
