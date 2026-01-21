@@ -17,6 +17,23 @@
 - shadcn/ui - UI 组件库
 - Tailwind CSS - 样式框架
 - Tiptap - 富文本编辑器
+- mdBook - 项目文档生成
+
+## 📚 完整文档
+
+本项目包含详细的文档，请访问 `docs/` 目录或查看在线文档：
+
+- [📘 开发指南](docs/DEVELOPMENT.md)
+- [🏗️ 架构说明](docs/ARCHITECTURE.md)
+- [🔌 API 参考](docs/API.md)
+- [🚀 部署指南](docs/DEPLOYMENT.md)
+
+也支持使用 mdBook 进行阅读：
+
+```bash
+cargo install mdbook
+mdbook serve
+```
 
 ## 🚀 快速开始
 
@@ -189,8 +206,8 @@ RUST_LOG=info
 
 首次启动时会自动创建默认管理员账户：
 
-- **用户名**: `admin`
-- **密码**: `admin`
+- **管理员**: `admin` / `admin`
+- **演示用户**: `demo` / `demo` (自动创建，用于测试)
 
 > ⚠️ **重要**：生产环境请立即修改默认密码！
 

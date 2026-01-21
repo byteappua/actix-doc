@@ -108,31 +108,35 @@ CREATE TABLE documents (
 ```
 front/src/
 ├── app/                    # Next.js App Router
-│   ├── layout.tsx          # 根布局
-│   └── page.tsx            # 首页
+│   ├── layout.tsx          # 根布局 (Server Component)
+│   ├── page.tsx            # 首页
+│   ├── login/              # 登录页面
+│   ├── register/           # 注册页面
+│   └── documents/[id]/     # 文档编辑页
 ├── components/             # 组件
 │   ├── layout/             # 布局组件
-│   │   ├── AppLayout.tsx   # 应用布局
+│   │   ├── AuthLayout.tsx  # 认证布局 (Client Component)
 │   │   └── AppSidebar.tsx  # 侧边栏
 │   ├── editor/             # 编辑器
-│   │   └── Editor.tsx      # Tiptap 编辑器
 │   └── ui/                 # shadcn/ui 组件
 └── lib/                    # 工具函数
     ├── api.ts              # API 客户端
+    ├── auth.tsx            # 认证上下文 (AuthProvider)
     └── utils.ts            # 通用工具
 ```
 
 ### 组件层次
 
 ```
-AppLayout
-  ├── ResizablePanel (Sidebar)
-  │   └── AppSidebar
-  │       ├── Navigation
-  │       └── Document Tree
-  └── ResizablePanel (Main)
-      └── Page Content
-          └── Editor
+RootLayout (Server)
+  └── AuthLayout (Client)
+      ├── AuthProvider (Context)
+      │   ├── Login/Register Page (Public)
+      │   └── Protected Route
+      │       ├── AppSidebar (Sidebar)
+      │       └── Page Content (Main)
+      │           └── Editor
+      └── (Redirect if unauthenticated)
 ```
 
 ## 构建流程
