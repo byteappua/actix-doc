@@ -33,8 +33,11 @@ cargo run
 # 启动前端（新终端）
 cd front
 pnpm install
+pnpm install
 pnpm run dev
 ```
+
+> **提示**: 开发环境默认提供管理员账户 `admin/admin` 和演示账户 `demo/demo`。
 
 ## 项目结构
 

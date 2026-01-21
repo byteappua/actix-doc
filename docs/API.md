@@ -107,8 +107,7 @@ curl -X POST http://localhost:8080/auth/login \
   "title": "string",
   "content": "string",
   "parent_id": "string",
-  "is_folder": boolean,
-  "owner_id": "string"
+  "is_folder": boolean
 }
 ```
 
