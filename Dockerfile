@@ -3,19 +3,22 @@
 # Stage 1: Build frontend
 FROM node:20-slim AS frontend-builder
 
+# Install pnpm
+RUN npm install -g pnpm
+
 WORKDIR /app/front
 
 # Copy frontend package files
 COPY front/package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Copy frontend source
 COPY front/ ./
 
 # Build frontend
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Build backend
 FROM rust:1.75-slim-bookworm AS backend-builder

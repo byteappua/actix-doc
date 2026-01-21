@@ -19,42 +19,42 @@ fn main() {
     if should_rebuild {
         println!("cargo::warning=Frontend rebuild triggered");
 
-        // Run npm install if node_modules doesn't exist
+        // Run pnpm install if node_modules doesn't exist
         if !Path::new("front/node_modules").exists() {
             println!("cargo::warning=Installing frontend dependencies...");
-            let npm_install = if cfg!(target_os = "windows") {
+            let pnpm_install = if cfg!(target_os = "windows") {
                 Command::new("cmd")
-                    .args(["/C", "npm", "install"])
+                    .args(["/C", "pnpm", "install"])
                     .current_dir("front")
                     .status()
             } else {
-                Command::new("npm")
+                Command::new("pnpm")
                     .arg("install")
                     .current_dir("front")
                     .status()
             };
 
-            if let Err(e) = npm_install {
-                println!("cargo::warning=Failed to run npm install: {}", e);
+            if let Err(e) = pnpm_install {
+                println!("cargo::warning=Failed to run pnpm install: {}", e);
                 return;
             }
         }
 
-        // Run npm run build
+        // Run pnpm run build
         println!("cargo::warning=Building frontend...");
-        let npm_build = if cfg!(target_os = "windows") {
+        let pnpm_build = if cfg!(target_os = "windows") {
             Command::new("cmd")
-                .args(["/C", "npm", "run", "build"])
+                .args(["/C", "pnpm", "run", "build"])
                 .current_dir("front")
                 .status()
         } else {
-            Command::new("npm")
+            Command::new("pnpm")
                 .args(["run", "build"])
                 .current_dir("front")
                 .status()
         };
 
-        match npm_build {
+        match pnpm_build {
             Ok(status) if status.success() => {
                 println!("cargo::warning=Frontend build completed successfully");
             }
@@ -66,7 +66,7 @@ fn main() {
                 return;
             }
             Err(e) => {
-                println!("cargo::warning=Failed to run npm build: {}", e);
+                println!("cargo::warning=Failed to run pnpm build: {}", e);
                 return;
             }
         }

@@ -39,7 +39,7 @@ docker run -p 8080:8080 -v $(pwd)/data:/app/data actix-doc
 
 - Rust 1.70+
 - Node.js 18+
-- npm 或 pnpm
+- pnpm (推荐) 或 npm
 
 #### 开发环境运行
 
@@ -64,8 +64,8 @@ cargo run
 
 ```bash
 cd front
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 前端将在 `http://localhost:3000` 启动
