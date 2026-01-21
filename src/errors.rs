@@ -9,8 +9,8 @@ pub enum ServiceError {
     #[display("BadRequest: {}", _0)]
     BadRequest(String),
     #[allow(dead_code)]
-    #[display("Unauthorized")]
-    Unauthorized,
+    #[display("Unauthorized: {}", _0)]
+    Unauthorized(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -31,8 +31,8 @@ impl ResponseError for ServiceError {
                     error: message.into(),
                 })
             }
-            ServiceError::Unauthorized => HttpResponse::Unauthorized().json(ErrorResponse {
-                error: "Unauthorized".into(),
+            ServiceError::Unauthorized(ref message) => HttpResponse::Unauthorized().json(ErrorResponse {
+                error: message.into(),
             }),
         }
     }
