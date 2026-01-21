@@ -71,3 +71,34 @@ export async function createDoc(
   if (!res.ok) throw new Error("Failed to create doc");
   return res.json();
 }
+
+export async function getDoc(id: string): Promise<Document> {
+  const res = await fetch(`${API_URL}/documents/${id}`, {
+    headers: getHeaders(),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+  if (!res.ok) throw new Error("Failed to fetch document");
+  return res.json();
+}
+
+export async function updateDoc(
+  id: string,
+  data: { title?: string; content?: string; parent_id?: string }
+): Promise<Document> {
+  const res = await fetch(`${API_URL}/documents/${id}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+  if (!res.ok) throw new Error("Failed to update document");
+  return res.json();
+}

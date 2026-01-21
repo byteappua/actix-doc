@@ -6,10 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import dynamic from "next/dynamic";
 
-const Editor = dynamic(() => import("@/components/editor/Editor").then(mod => ({ default: mod.Editor })), {
-  ssr: false,
-  loading: () => <div className="flex items-center justify-center h-full">Loading editor...</div>
-});
+const DocumentEditor = dynamic(
+  () => import("@/components/editor/DocumentEditor").then(mod => ({ default: mod.DocumentEditor })),
+  {
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-full">Loading editor...</div>
+  }
+);
 
 function HomeContent() {
   const router = useRouter();
@@ -30,11 +33,7 @@ function HomeContent() {
   };
 
   if (docId) {
-    return (
-      <div className="h-full">
-        <Editor />
-      </div>
-    );
+    return <DocumentEditor documentId={docId} />;
   }
 
   return (
