@@ -4,6 +4,8 @@
 /server/Cargo.lock
 /server/.env
 /server/static/
+/server/*.db
+/server/data.db
 
 # Node / Next.js
 /client/node_modules/

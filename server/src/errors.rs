@@ -8,6 +8,7 @@ pub enum ServiceError {
     InternalServerError,
     #[display("BadRequest: {}", _0)]
     BadRequest(String),
+    #[allow(dead_code)]
     #[display("Unauthorized")]
     Unauthorized,
 }

@@ -1,4 +1,4 @@
-const API_Url = "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export interface Document {
   id: string;
@@ -12,7 +12,7 @@ export interface Document {
 }
 
 export async function fetchDocs(): Promise<Document[]> {
-  const res = await fetch(`${API_Url}/documents`);
+  const res = await fetch(`${API_URL}/documents`);
   if (!res.ok) throw new Error("Failed to fetch docs");
   return res.json();
 }
@@ -22,7 +22,7 @@ export async function createDoc(
   is_folder: boolean = false,
   parent_id?: string,
 ): Promise<Document> {
-  const res = await fetch(`${API_Url}/documents`, {
+  const res = await fetch(`${API_URL}/documents`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

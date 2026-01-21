@@ -94,10 +94,13 @@ pub async fn login(
         iat: Utc::now().timestamp() as usize,
     };
 
+    let jwt_secret = std::env::var("JWT_SECRET")
+        .unwrap_or_else(|_| "dev_fallback_secret_key_change_me".to_string());
+
     let token = encode(
         &Header::default(),
         &claims,
-        &EncodingKey::from_secret("secret_key_change_me".as_ref()), // TODO: Move to env
+        &EncodingKey::from_secret(jwt_secret.as_ref()),
     )
     .map_err(|_| ServiceError::InternalServerError)?;
 
