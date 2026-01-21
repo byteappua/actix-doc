@@ -177,6 +177,15 @@ JWT_SECRET=your_secret_key_min_32_chars
 RUST_LOG=info
 ```
 
+## 👤 默认用户
+
+首次启动时会自动创建默认管理员账户：
+
+- **用户名**: `admin`
+- **密码**: `admin`
+
+> ⚠️ **重要**：生产环境请立即修改默认密码！
+
 ## 📚 API 文档
 
 - `POST /auth/register` - 用户注册
