@@ -13,11 +13,13 @@ import {
   Settings,
   Trash2,
   FolderPlus,
+  Search,
 } from "lucide-react";
 import { createDoc, Document } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDocuments } from "@/components/providers/DocumentsProvider";
+import { SearchDialog } from "@/components/search-dialog";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   Collapsible,
@@ -212,15 +214,30 @@ export function AppSidebar({ className }: SidebarProps) {
     }
   };
 
-  const tree = buildTree(documents);
+  const tree = buildTree(documents.filter((d) => !d.deleted_at));
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className={cn("pb-12 h-screen border-r bg-background", className)}>
+      <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            My Workspace
-          </h2>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-muted-foreground mb-4 relative"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Search className="mr-2 h-4 w-4" />
+            Search...
+            <kbd className="pointer-events-none absolute right-2 top-[50%] translate-y-[-50%] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
+          <div className="flex items-center justify-between px-4 mb-2">
+            <h2 className="text-lg font-semibold tracking-tight">
+              My Workspace
+            </h2>
+          </div>
           <div className="flex space-x-2 px-2">
             <Button
               variant="outline"
@@ -267,7 +284,16 @@ export function AppSidebar({ className }: SidebarProps) {
             </div>
           </ScrollArea>
         </div>
+
         <div className="mt-auto p-4 absolute bottom-0 w-full bg-background border-t">
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-2 text-muted-foreground hover:text-foreground"
+            onClick={() => router.push("/trash")}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Trash
+          </Button>
           <Button
             variant="outline"
             className="w-full"

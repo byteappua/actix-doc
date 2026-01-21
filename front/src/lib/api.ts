@@ -16,6 +16,7 @@ export interface Document {
   created_at: string;
   updated_at: string;
   tags?: Tag[];
+  deleted_at?: string | null;
 }
 
 function getHeaders() {
@@ -145,5 +146,48 @@ export async function createTag(name: string): Promise<Tag> {
     body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error("Failed to create tag");
+  return res.json();
+}
+
+export async function fetchTrash(): Promise<Document[]> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/trash`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch trash");
+  return res.json();
+}
+
+export async function restoreDoc(id: string): Promise<void> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/documents/${id}/restore`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to restore document");
+}
+
+export async function permanentDeleteDoc(id: string): Promise<void> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/documents/${id}/permanent`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to delete document permanently");
+}
+
+export interface SearchResult {
+  id: string;
+  title: string;
+  headline: string;
+  rank: number;
+}
+
+export async function searchDocs(query: string): Promise<SearchResult[]> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to search docs");
   return res.json();
 }

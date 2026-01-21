@@ -6,8 +6,10 @@ use env_logger::Env;
 mod auth;
 mod db;
 mod docs;
+mod docs_trash;
 mod errors;
 mod models;
+mod search;
 mod tags;
 
 use argon2::{
@@ -105,6 +107,10 @@ async fn main() -> std::io::Result<()> {
             .service(docs::delete_doc)
             .service(tags::list_tags)
             .service(tags::create_tag)
+            .service(docs_trash::get_trash)
+            .service(docs_trash::restore_doc)
+            .service(docs_trash::delete_doc_permanent)
+            .service(search::search_docs)
             .service(actix_files::Files::new("/", "./static").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?

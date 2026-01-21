@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthLayout from "@/components/layout/AuthLayout";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const fontSans = {
+  variable: "--font-sans",
+  className: "font-sans",
+};
 
 export const metadata: Metadata = {
   title: "Actix Doc",
@@ -18,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={fontSans.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

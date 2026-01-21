@@ -51,7 +51,7 @@ pub async fn list_docs(
 
     let docs = query_as!(
         Document,
-        "SELECT * FROM documents WHERE owner_id = ? ORDER BY is_folder DESC, title ASC",
+        "SELECT * FROM documents WHERE owner_id = ? AND deleted_at IS NULL ORDER BY is_folder DESC, title ASC",
         user_id
     )
     .fetch_all(pool.get_ref())
@@ -96,10 +96,14 @@ pub async fn get_doc(
     let user_id = get_user_id(&req)?;
     let doc_id = id.into_inner();
 
-    let doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", doc_id)
-        .fetch_optional(pool.get_ref())
-        .await?
-        .ok_or(ServiceError::BadRequest("Document not found".into()))?;
+    let doc = query_as!(
+        Document,
+        "SELECT * FROM documents WHERE id = ? AND deleted_at IS NULL",
+        doc_id
+    )
+    .fetch_optional(pool.get_ref())
+    .await?
+    .ok_or(ServiceError::BadRequest("Document not found".into()))?;
 
     if doc.owner_id != user_id {
         return Err(ServiceError::Forbidden("Permission denied".into()));
@@ -289,13 +293,16 @@ pub async fn delete_doc(
         return Err(ServiceError::Forbidden("Permission denied".into()));
     }
 
-    let result = query!("DELETE FROM documents WHERE id = ?", doc_id)
-        .execute(pool.get_ref())
-        .await?;
+    let result = query!(
+        "UPDATE documents SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+        doc_id
+    )
+    .execute(pool.get_ref())
+    .await?;
 
     if result.rows_affected() == 0 {
         return Err(ServiceError::BadRequest("Document not found".into()));
     }
 
-    Ok(HttpResponse::Ok().json(serde_json::json!({"message": "Document deleted"})))
+    Ok(HttpResponse::Ok().json(serde_json::json!({"message": "Document moved to trash"})))
 }

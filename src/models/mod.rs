@@ -22,6 +22,7 @@ pub struct Document {
     pub is_folder: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
