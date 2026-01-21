@@ -11,8 +11,9 @@ import {
   Plus,
   Settings,
   Users,
+  Trash2,
 } from "lucide-react";
-import { createDoc, fetchDocs, Document } from "@/lib/api";
+import { createDoc, fetchDocs, deleteDoc, Document } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -40,7 +41,7 @@ export function AppSidebar({ className }: SidebarProps) {
     setIsLoading(true);
     try {
       const doc = await createDoc("Untitled");
-      router.push(`/?id=${doc.id}`);
+      router.push(`/documents/${doc.id}`);
       loadDocs(); // Refresh list
     } catch (error) {
       console.error("Failed to create document:", error);
@@ -80,16 +81,43 @@ export function AppSidebar({ className }: SidebarProps) {
                 </p>
               )}
               {documents.map((doc) => (
-                <Button
+                <div
                   key={doc.id}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start font-normal"
-                  onClick={() => router.push(`/?id=${doc.id}`)}
+                  className="group flex items-center justify-between w-full hover:bg-accent hover:text-accent-foreground rounded-md"
                 >
-                  <FileText className="mr-2 h-4 w-4" />
-                  {doc.title}
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 justify-start font-normal h-8"
+                    onClick={() => router.push(`/documents/${doc.id}`)}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span className="truncate">{doc.title}</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (
+                        !confirm(
+                          "Are you sure you want to delete this document?",
+                        )
+                      )
+                        return;
+                      try {
+                        await deleteDoc(doc.id);
+                        loadDocs();
+                        router.push("/");
+                      } catch (err) {
+                        console.error("Failed to delete", err);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                  </Button>
+                </div>
               ))}
             </div>
           </ScrollArea>

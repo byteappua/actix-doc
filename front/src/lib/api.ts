@@ -87,7 +87,7 @@ export async function getDoc(id: string): Promise<Document> {
 
 export async function updateDoc(
   id: string,
-  data: { title?: string; content?: string; parent_id?: string }
+  data: { title?: string; content?: string; parent_id?: string },
 ): Promise<Document> {
   const res = await fetch(`${API_URL}/documents/${id}`, {
     method: "PUT",
@@ -101,4 +101,17 @@ export async function updateDoc(
   }
   if (!res.ok) throw new Error("Failed to update document");
   return res.json();
+}
+
+export async function deleteDoc(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/documents/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+  if (!res.ok) throw new Error("Failed to delete document");
 }
