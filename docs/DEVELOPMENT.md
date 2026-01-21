@@ -93,6 +93,28 @@ pnpm run lint
 pnpm run build
 ```
 
+### 强制重建前端
+
+如果删除了 `front/out` 或 `static` 目录，需要强制重建：
+
+```bash
+# Windows CMD
+set REBUILD_FRONT=1 && cargo build
+
+# Windows PowerShell
+$env:REBUILD_FRONT=1; cargo build
+
+# Linux/macOS
+REBUILD_FRONT=1 cargo build
+```
+
+这会触发完整流程：
+
+1. 检测 `REBUILD_FRONT` 环境变量
+2. 运行 `pnpm install`（如需要）
+3. 运行 `pnpm run build` → 生成 `front/out/`
+4. 复制到 `static/`
+
 ### 数据库迁移
 
 ```bash
