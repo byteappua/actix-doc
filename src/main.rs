@@ -49,6 +49,30 @@ async fn create_default_user(pool: &db::DbPool) -> Result<(), Box<dyn std::error
     println!("✅ Default admin user created (username: admin, password: admin)");
     println!("⚠️  Please change the default password in production!");
 
+    // Create demo user for development (matches frontend api.ts)
+    let demo_existing = query!("SELECT id FROM users WHERE id = ?", "demo-user")
+        .fetch_optional(pool)
+        .await?;
+
+    if demo_existing.is_none() {
+        let password = "demo";
+        let salt = SaltString::generate(&mut OsRng);
+        let password_hash = Argon2::default()
+            .hash_password(password.as_bytes(), &salt)
+            .map_err(|e| format!("Password hashing failed: {}", e))?
+            .to_string();
+
+        query!(
+            "INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)",
+            "demo-user",
+            "demo",
+            password_hash
+        )
+        .execute(pool)
+        .await?;
+        println!("✅ Demo user created for dev (id: demo-user)");
+    }
+
     Ok(())
 }
 

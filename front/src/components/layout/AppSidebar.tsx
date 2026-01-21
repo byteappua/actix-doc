@@ -12,10 +12,28 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { createDoc } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function AppSidebar({ className }: SidebarProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCreate = async () => {
+    setIsLoading(true);
+    try {
+      const doc = await createDoc("Untitled");
+      router.push(`/documents/${doc.id}`);
+    } catch (error) {
+      console.error("Failed to create document:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={cn("pb-12 h-screen border-r bg-background", className)}>
       <div className="space-y-4 py-4">
@@ -24,9 +42,14 @@ export function AppSidebar({ className }: SidebarProps) {
             My Workspace
           </h2>
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={handleCreate}
+              disabled={isLoading}
+            >
               <Plus className="mr-2 h-4 w-4" />
-              New Page
+              {isLoading ? "Creating..." : "New Page"}
             </Button>
           </div>
         </div>
