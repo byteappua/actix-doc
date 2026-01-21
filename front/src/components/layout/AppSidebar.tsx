@@ -25,7 +25,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+type SidebarProps = React.HTMLAttributes<HTMLDivElement>;
 
 interface TreeDocument extends Document {
   children: TreeDocument[];
@@ -114,7 +114,24 @@ function TreeItem({ item, level, onDelete, router }: TreeItemProps) {
         {item.is_folder ? (
           <Folder className="h-4 w-4 mr-2 shrink-0 text-blue-500 fill-blue-500/20" />
         ) : null}
-        <span className="truncate text-sm">{item.title}</span>
+        <span className="truncate text-sm mr-2">{item.title}</span>
+        {item.tags && item.tags.length > 0 && (
+          <div className="flex gap-1">
+            {item.tags.slice(0, 2).map((tag) => (
+              <span
+                key={tag.id}
+                className="text-[10px] bg-muted-foreground/20 px-1 rounded text-muted-foreground"
+              >
+                {tag.name}
+              </span>
+            ))}
+            {item.tags.length > 2 && (
+              <span className="text-[10px] text-muted-foreground">
+                +{item.tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">

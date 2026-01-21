@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { getDoc, updateDoc } from "@/lib/api";
 import { Save, Loader2 } from "lucide-react";
 
+import { TagInput } from "@/components/ui/tag-input";
+
 interface DocumentEditorProps {
   documentId: string;
 }
@@ -14,11 +16,13 @@ interface DocumentEditorProps {
 export function DocumentEditor({ documentId }: DocumentEditorProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadDocument();
   }, [documentId]);
 
@@ -28,6 +32,7 @@ export function DocumentEditor({ documentId }: DocumentEditorProps) {
       const doc = await getDoc(documentId);
       setTitle(doc.title);
       setContent(doc.content || "");
+      setTags(doc.tags?.map((t) => t.id) || []);
     } catch (error) {
       console.error("Failed to load document:", error);
     } finally {
@@ -38,7 +43,7 @@ export function DocumentEditor({ documentId }: DocumentEditorProps) {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await updateDoc(documentId, { title, content });
+      await updateDoc(documentId, { title, content, tags });
       setLastSaved(new Date());
     } catch (error) {
       console.error("Failed to save document:", error);
@@ -85,6 +90,9 @@ export function DocumentEditor({ documentId }: DocumentEditorProps) {
             )}
           </Button>
         </div>
+      </div>
+      <div className="px-4 py-2 border-b bg-muted/20">
+        <TagInput selectedTags={tags} onChange={setTags} />
       </div>
       <div className="flex-1 overflow-auto p-4">
         <Editor content={content} onChange={setContent} />

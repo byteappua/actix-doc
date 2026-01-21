@@ -4,7 +4,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as};
 use uuid::Uuid;
 
-use crate::{db::DbPool, errors::ServiceError, models::Document};
+use crate::{
+    db::DbPool,
+    errors::ServiceError,
+    models::{tag::Tag, Document, DocumentWithTags},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateDocRequest {
@@ -12,6 +16,7 @@ pub struct CreateDocRequest {
     pub content: Option<String>,
     pub parent_id: Option<String>,
     pub is_folder: bool,
+    pub tags: Option<Vec<String>>, // List of tag names or IDs
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,6 +24,7 @@ pub struct UpdateDocRequest {
     pub title: Option<String>,
     pub content: Option<String>,
     pub parent_id: Option<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 fn get_user_id(req: &HttpRequest) -> Result<String, ServiceError> {
@@ -51,7 +57,34 @@ pub async fn list_docs(
     .fetch_all(pool.get_ref())
     .await?;
 
-    Ok(HttpResponse::Ok().json(docs))
+    // Efficiently fetch tags for all documents?
+    // For now, let's just do it simply. N+1 but safe.
+    // Or better: fetch all tags for these docs.
+    // Let's iterate and map.
+
+    let mut docs_with_tags = Vec::new();
+    for doc in docs {
+        let tags = query_as!(
+            Tag,
+            r#"
+            SELECT t.id, t.name, t.created_at
+            FROM tags t
+            JOIN document_tags dt ON t.id = dt.tag_id
+            WHERE dt.document_id = ?
+            ORDER BY t.name ASC
+            "#,
+            doc.id
+        )
+        .fetch_all(pool.get_ref())
+        .await?;
+
+        docs_with_tags.push(DocumentWithTags {
+            document: doc,
+            tags,
+        });
+    }
+
+    Ok(HttpResponse::Ok().json(docs_with_tags))
 }
 
 #[get("/documents/{id}")]
@@ -72,7 +105,24 @@ pub async fn get_doc(
         return Err(ServiceError::Forbidden("Permission denied".into()));
     }
 
-    Ok(HttpResponse::Ok().json(doc))
+    let tags = query_as!(
+        Tag,
+        r#"
+        SELECT t.id, t.name, t.created_at
+        FROM tags t
+        JOIN document_tags dt ON t.id = dt.tag_id
+        WHERE dt.document_id = ?
+        ORDER BY t.name ASC
+        "#,
+        doc.id
+    )
+    .fetch_all(pool.get_ref())
+    .await?;
+
+    Ok(HttpResponse::Ok().json(DocumentWithTags {
+        document: doc,
+        tags,
+    }))
 }
 
 #[post("/documents")]
@@ -96,11 +146,43 @@ pub async fn create_doc(
     .execute(pool.get_ref())
     .await?;
 
+    if let Some(tags) = &req.tags {
+        for tag_id in tags {
+            // Check if tag exists (optional, or rely on FK constraint failure)
+            // But if we want to support creating tags by name on the fly, we need more logic.
+            // Assuming IDs for now as per plan logic.
+            let _ = query!(
+                "INSERT OR IGNORE INTO document_tags (document_id, tag_id) VALUES (?, ?)",
+                id,
+                tag_id
+            )
+            .execute(pool.get_ref())
+            .await;
+        }
+    }
+
     let doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", id)
         .fetch_one(pool.get_ref())
         .await?;
 
-    Ok(HttpResponse::Ok().json(doc))
+    let tags = query_as!(
+        Tag,
+        r#"
+        SELECT t.id, t.name, t.created_at
+        FROM tags t
+        JOIN document_tags dt ON t.id = dt.tag_id
+        WHERE dt.document_id = ?
+        ORDER BY t.name ASC
+        "#,
+        id
+    )
+    .fetch_all(pool.get_ref())
+    .await?;
+
+    Ok(HttpResponse::Ok().json(DocumentWithTags {
+        document: doc,
+        tags,
+    }))
 }
 
 #[put("/documents/{id}")]
@@ -145,7 +227,48 @@ pub async fn update_doc(
     .execute(pool.get_ref())
     .await?;
 
-    Ok(HttpResponse::Ok().json(doc))
+    if let Some(tags) = &req.tags {
+        // Replace all tags.
+        // 1. Delete existing
+        let _ = query!("DELETE FROM document_tags WHERE document_id = ?", doc_id)
+            .execute(pool.get_ref())
+            .await;
+
+        // 2. Insert new
+        for tag_id in tags {
+            let _ = query!(
+                "INSERT OR IGNORE INTO document_tags (document_id, tag_id) VALUES (?, ?)",
+                doc_id,
+                tag_id
+            )
+            .execute(pool.get_ref())
+            .await;
+        }
+    }
+
+    // Refresh doc and tags
+    let doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", doc_id)
+        .fetch_one(pool.get_ref())
+        .await?;
+
+    let tags = query_as!(
+        Tag,
+        r#"
+        SELECT t.id, t.name, t.created_at
+        FROM tags t
+        JOIN document_tags dt ON t.id = dt.tag_id
+        WHERE dt.document_id = ?
+        ORDER BY t.name ASC
+        "#,
+        doc_id
+    )
+    .fetch_all(pool.get_ref())
+    .await?;
+
+    Ok(HttpResponse::Ok().json(DocumentWithTags {
+        document: doc,
+        tags,
+    }))
 }
 
 #[delete("/documents/{id}")]

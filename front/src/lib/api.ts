@@ -1,5 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+export interface Tag {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Document {
   id: string;
   title: string;
@@ -9,6 +15,7 @@ export interface Document {
   owner_id: string;
   created_at: string;
   updated_at: string;
+  tags?: Tag[];
 }
 
 function getHeaders() {
@@ -56,6 +63,7 @@ export async function createDoc(
   title: string,
   is_folder: boolean = false,
   parent_id?: string,
+  tags?: string[],
 ): Promise<Document> {
   const res = await fetch(`${API_URL}/documents`, {
     method: "POST",
@@ -64,6 +72,7 @@ export async function createDoc(
       title,
       is_folder,
       parent_id,
+      tags,
       // owner_id is handled by backend from token claims
       content: "",
     }),
@@ -87,7 +96,12 @@ export async function getDoc(id: string): Promise<Document> {
 
 export async function updateDoc(
   id: string,
-  data: { title?: string; content?: string; parent_id?: string },
+  data: {
+    title?: string;
+    content?: string;
+    parent_id?: string;
+    tags?: string[];
+  },
 ): Promise<Document> {
   const res = await fetch(`${API_URL}/documents/${id}`, {
     method: "PUT",
@@ -114,4 +128,22 @@ export async function deleteDoc(id: string): Promise<void> {
     throw new Error("Unauthorized");
   }
   if (!res.ok) throw new Error("Failed to delete document");
+}
+
+export async function fetchTags(): Promise<Tag[]> {
+  const res = await fetch(`${API_URL}/tags`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch tags");
+  return res.json();
+}
+
+export async function createTag(name: string): Promise<Tag> {
+  const res = await fetch(`${API_URL}/tags`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error("Failed to create tag");
+  return res.json();
 }

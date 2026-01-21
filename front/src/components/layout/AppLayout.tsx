@@ -11,7 +11,7 @@ import {
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <ResizablePanelGroup
-      orientation="horizontal"
+      direction="horizontal"
       className="min-h-screen w-full rounded-lg border"
     >
       <ResizablePanel

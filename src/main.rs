@@ -8,6 +8,7 @@ mod db;
 mod docs;
 mod errors;
 mod models;
+mod tags;
 
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -102,6 +103,8 @@ async fn main() -> std::io::Result<()> {
             .service(docs::create_doc)
             .service(docs::update_doc)
             .service(docs::delete_doc)
+            .service(tags::list_tags)
+            .service(tags::create_tag)
             .service(actix_files::Files::new("/", "./static").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?

@@ -1,3 +1,4 @@
+pub mod tag;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
@@ -21,6 +22,13 @@ pub struct Document {
     pub is_folder: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocumentWithTags {
+    #[serde(flatten)]
+    pub document: Document,
+    pub tags: Vec<tag::Tag>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
