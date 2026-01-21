@@ -4,7 +4,7 @@ use argon2::{
     Argon2,
 };
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
 use uuid::Uuid;
@@ -16,16 +16,29 @@ use crate::{
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-struct TokenClaims {
-    sub: String,
-    exp: usize,
-    iat: usize,
+pub struct TokenClaims {
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
 }
 
 #[derive(Serialize)]
 struct AuthResponse {
     token: String,
     username: String,
+}
+
+pub fn validate_token(token: &str) -> Result<String, ServiceError> {
+    let jwt_secret = std::env::var("JWT_SECRET")
+        .unwrap_or_else(|_| "dev_fallback_secret_key_change_me".to_string());
+
+    let key = DecodingKey::from_secret(jwt_secret.as_ref());
+    let validation = Validation::default();
+
+    let token_data = decode::<TokenClaims>(token, &key, &validation)
+        .map_err(|_| ServiceError::Unauthorized("Invalid token".into()))?;
+
+    Ok(token_data.claims.sub)
 }
 
 #[post("/auth/register")]

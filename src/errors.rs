@@ -11,6 +11,8 @@ pub enum ServiceError {
     #[allow(dead_code)]
     #[display("Unauthorized: {}", _0)]
     Unauthorized(String),
+    #[display("Forbidden: {}", _0)]
+    Forbidden(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -31,7 +33,12 @@ impl ResponseError for ServiceError {
                     error: message.into(),
                 })
             }
-            ServiceError::Unauthorized(ref message) => HttpResponse::Unauthorized().json(ErrorResponse {
+            ServiceError::Unauthorized(ref message) => {
+                HttpResponse::Unauthorized().json(ErrorResponse {
+                    error: message.into(),
+                })
+            }
+            ServiceError::Forbidden(ref message) => HttpResponse::Forbidden().json(ErrorResponse {
                 error: message.into(),
             }),
         }

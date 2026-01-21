@@ -3,8 +3,9 @@
 import { Editor } from "@/components/editor/Editor";
 import { useAuth } from "@/lib/auth";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { Document, getDoc, updateDoc } from "@/lib/api";
+import { useDebounce } from "@/hooks/use-debounce";
 
 function DocumentEditor() {
   const searchParams = useSearchParams();
@@ -30,13 +31,22 @@ function DocumentEditor() {
     }
   };
 
-  const handleChange = async (content: string) => {
-    if (!doc) return;
+  const handleSave = useCallback(async (docId: string, content: string) => {
     try {
-      await updateDoc(doc.id, { content });
+      await updateDoc(docId, { content });
+      console.log("Document saved");
     } catch (error) {
       console.error("Failed to save document:", error);
     }
+  }, []);
+
+  const debouncedSave = useDebounce(handleSave, 1000);
+
+  const handleChange = (content: string) => {
+    if (!doc) return;
+    // Update local state if needed (optional here as Editor manages its own state)
+    // but we trigger the debounced save
+    debouncedSave(doc.id, content);
   };
 
   if (isLoading) {

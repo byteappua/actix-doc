@@ -1,4 +1,4 @@
-use actix_web::{delete, get, post, put, web, HttpResponse};
+use actix_web::{delete, get, post, put, web, HttpRequest, HttpResponse};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as};
@@ -21,12 +21,32 @@ pub struct UpdateDocRequest {
     pub parent_id: Option<String>,
 }
 
+fn get_user_id(req: &HttpRequest) -> Result<String, ServiceError> {
+    let auth_header = req
+        .headers()
+        .get("Authorization")
+        .ok_or(ServiceError::Unauthorized("No token provided".into()))?
+        .to_str()
+        .map_err(|_| ServiceError::Unauthorized("Invalid token format".into()))?;
+
+    let token = auth_header
+        .strip_prefix("Bearer ")
+        .ok_or(ServiceError::Unauthorized("Invalid token format".into()))?;
+
+    crate::auth::validate_token(token)
+}
+
 #[get("/documents")]
-pub async fn list_docs(pool: web::Data<DbPool>) -> Result<HttpResponse, ServiceError> {
-    // TODO: Filter by user_id from JWT
+pub async fn list_docs(
+    pool: web::Data<DbPool>,
+    req: HttpRequest,
+) -> Result<HttpResponse, ServiceError> {
+    let user_id = get_user_id(&req)?;
+
     let docs = query_as!(
         Document,
-        "SELECT * FROM documents ORDER BY is_folder DESC, title ASC"
+        "SELECT * FROM documents WHERE owner_id = ? ORDER BY is_folder DESC, title ASC",
+        user_id
     )
     .fetch_all(pool.get_ref())
     .await?;
@@ -38,54 +58,30 @@ pub async fn list_docs(pool: web::Data<DbPool>) -> Result<HttpResponse, ServiceE
 pub async fn get_doc(
     pool: web::Data<DbPool>,
     id: web::Path<String>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, ServiceError> {
+    let user_id = get_user_id(&req)?;
     let doc_id = id.into_inner();
+
     let doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", doc_id)
         .fetch_optional(pool.get_ref())
         .await?
         .ok_or(ServiceError::BadRequest("Document not found".into()))?;
 
-    Ok(HttpResponse::Ok().json(doc))
-}
+    if doc.owner_id != user_id {
+        return Err(ServiceError::Forbidden("Permission denied".into()));
+    }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
-    iat: usize,
+    Ok(HttpResponse::Ok().json(doc))
 }
 
 #[post("/documents")]
 pub async fn create_doc(
     pool: web::Data<DbPool>,
     req: web::Json<CreateDocRequest>,
-    http_req: actix_web::HttpRequest,
+    http_req: HttpRequest,
 ) -> Result<HttpResponse, ServiceError> {
-    // 1. Extract Token
-    let auth_header = http_req
-        .headers()
-        .get("Authorization")
-        .ok_or(ServiceError::Unauthorized("No token provided".into()))?
-        .to_str()
-        .map_err(|_| ServiceError::Unauthorized("Invalid token format".into()))?;
-
-    let token = auth_header
-        .strip_prefix("Bearer ")
-        .ok_or(ServiceError::Unauthorized("Invalid token format".into()))?;
-
-    // 2. Decode Token
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "dev_fallback_secret_key_change_me".to_string());
-
-    let key = jsonwebtoken::DecodingKey::from_secret(jwt_secret.as_ref());
-    let validation = jsonwebtoken::Validation::default();
-
-    let token_data = jsonwebtoken::decode::<Claims>(token, &key, &validation)
-        .map_err(|_| ServiceError::Unauthorized("Invalid token".into()))?;
-
-    let user_id = token_data.claims.sub;
-
-    // 3. Create Document
+    let user_id = get_user_id(&http_req)?;
     let id = Uuid::new_v4().to_string();
 
     let _ = query!(
@@ -94,7 +90,7 @@ pub async fn create_doc(
         req.title,
         req.content,
         req.parent_id,
-        user_id, // Use extracted user_id
+        user_id,
         req.is_folder
     )
     .execute(pool.get_ref())
@@ -112,19 +108,20 @@ pub async fn update_doc(
     pool: web::Data<DbPool>,
     id: web::Path<String>,
     req: web::Json<UpdateDocRequest>,
+    http_req: HttpRequest,
 ) -> Result<HttpResponse, ServiceError> {
+    let user_id = get_user_id(&http_req)?;
     let doc_id = id.into_inner();
     let now = Utc::now().naive_utc();
-
-    // Determine what to update. This is a bit manual dynamically with macros,
-    // so for now we'll do a simple coalesced update or separate updates.
-    // Simplifying: Always update all provided fields or keep existing.
-    // Better strategy for sqlx macro: Fetch, update struct, save back.
 
     let mut doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", doc_id)
         .fetch_optional(pool.get_ref())
         .await?
         .ok_or(ServiceError::BadRequest("Document not found".into()))?;
+
+    if doc.owner_id != user_id {
+        return Err(ServiceError::Forbidden("Permission denied".into()));
+    }
 
     if let Some(title) = &req.title {
         doc.title = title.clone();
@@ -155,8 +152,20 @@ pub async fn update_doc(
 pub async fn delete_doc(
     pool: web::Data<DbPool>,
     id: web::Path<String>,
+    req: HttpRequest,
 ) -> Result<HttpResponse, ServiceError> {
+    let user_id = get_user_id(&req)?;
     let doc_id = id.into_inner();
+
+    let doc = query_as!(Document, "SELECT * FROM documents WHERE id = ?", doc_id)
+        .fetch_optional(pool.get_ref())
+        .await?
+        .ok_or(ServiceError::BadRequest("Document not found".into()))?;
+
+    if doc.owner_id != user_id {
+        return Err(ServiceError::Forbidden("Permission denied".into()));
+    }
+
     let result = query!("DELETE FROM documents WHERE id = ?", doc_id)
         .execute(pool.get_ref())
         .await?;
