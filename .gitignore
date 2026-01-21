@@ -1,0 +1,17 @@
+# Rust / Actix
+/server/target/
+/server/**/*.rs.bk
+/server/Cargo.lock
+/server/.env
+
+# Node / Next.js
+/client/node_modules/
+/client/.next/
+/client/out/
+/client/build/
+/client/.ds_store
+*.log
+
+# IDE
+.vscode/
+.idea/
