@@ -20,13 +20,28 @@
 
 ## 🚀 快速开始
 
-### 前置要求
+### 方式一：Docker (推荐)
+
+```bash
+# 使用 docker-compose
+docker-compose up -d
+
+# 或手动构建并运行
+docker build -t actix-doc .
+docker run -p 8080:8080 -v $(pwd)/data:/app/data actix-doc
+```
+
+访问 `http://localhost:8080`
+
+### 方式二：本地开发
+
+#### 前置要求
 
 - Rust 1.70+
 - Node.js 18+
 - npm 或 pnpm
 
-### 开发环境运行
+#### 开发环境运行
 
 1. **克隆仓库**
 
@@ -82,13 +97,58 @@ cargo run --release
 
 ```
 actix-doc/
-├── src/             # 后端 Rust 源代码
-├── migrations/      # 数据库迁移
-├── static/          # 前端静态文件（自动生成）
-├── front/           # Next.js 前端源代码
-├── build.rs         # 构建脚本（自动化前端构建）
-├── Cargo.toml       # Rust 项目配置
-└── .env             # 环境变量
+├── src/                # Rust 后端源代码
+├── migrations/         # 数据库迁移
+├── static/             # 前端静态文件（自动生成）
+├── front/              # Next.js 前端源代码
+├── build.rs            # 构建脚本（自动化前端构建）
+├── Dockerfile          # Docker 镜像定义
+├── docker-compose.yml  # Docker Compose 配置
+├── Cargo.toml          # Rust 项目配置
+└── .env                # 环境变量
+```
+
+## 🐳 Docker 部署
+
+### 使用 Docker Compose（推荐）
+
+```bash
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+### 手动 Docker 命令
+
+```bash
+# 构建镜像
+docker build -t actix-doc .
+
+# 运行容器
+docker run -d \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  -e JWT_SECRET=your_secret_key \
+  --name actix-doc \
+  actix-doc
+
+# 查看日志
+docker logs -f actix-doc
+```
+
+### 环境变量配置
+
+在 `docker-compose.yml` 或 `.env` 中配置：
+
+```env
+DATABASE_URL=sqlite:/app/data/data.db
+JWT_SECRET=your_secret_key_min_32_chars
+RUST_LOG=info
 ```
 
 ## 🔧 自动化构建
@@ -98,13 +158,13 @@ actix-doc/
 - ✅ `cargo build` 时自动检测 `front/out` 是否存在
 - ✅ 如不存在，自动运行 `npm install` 和 `npm run build`
 - ✅ 自动复制构建产物到 `static/` 目录
-- ✅ 无需手动管理前端构建流程
+- ✅ 智能检测 `front/src` 文件变化并重新构建
 
-**手动重新构建前端**:
+**手动控制前端重建**:
 
 ```bash
-cd front && npm run build
-cargo build  # 会自动复制新文件
+# 强制重建前端
+REBUILD_FRONT=1 cargo build
 ```
 
 ## 🔑 环境变量
@@ -132,6 +192,7 @@ RUST_LOG=info
 - 使用 `cargo watch -x run` 实现后端热重载
 - 前端修改在开发模式下会自动热更新
 - CORS 已配置为 permissive，方便开发调试
+- 生产环境建议使用 Docker 部署
 
 ## 📝 License
 

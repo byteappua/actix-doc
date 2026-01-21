@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Node
+front/node_modules/
+front/.next/
+front/out/
+
+# Build artifacts
+static/
+
+# Database
+*.db
+data/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docs
+README.md
+*.md
+
+# CI/CD
+.github/
