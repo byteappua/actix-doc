@@ -60,6 +60,13 @@ actix-doc/
 ├── build.rs            # 构建脚本
 ├── Dockerfile          # Docker 镜像
 └── docs/               # 项目文档
+
+### 路由策略说明
+
+由于项目使用 Next.js 的 `output: 'export'` 模式（纯静态导出），不支持动态路由（如 `/documents/[id]`）。
+因此，文档页使用 **Query Parameters** 模式：`/documents?id=<doc_id>`。
+
+前端代码中使用 `useSearchParams` 并在 `Suspense` 边界内获取参数。
 ```
 
 ## 开发工作流

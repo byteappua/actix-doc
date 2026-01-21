@@ -111,8 +111,10 @@ front/src/
 │   ├── layout.tsx          # 根布局 (Server Component)
 │   ├── page.tsx            # 首页
 │   ├── login/              # 登录页面
+│   ├── login/              # 登录页面
 │   ├── register/           # 注册页面
-│   └── documents/[id]/     # 文档编辑页
+│   └── documents/          # 文档页面
+│       └── page.tsx        # 文档编辑器 (Query Params)
 ├── components/             # 组件
 │   ├── layout/             # 布局组件
 │   │   ├── AuthLayout.tsx  # 认证布局 (Client Component)
