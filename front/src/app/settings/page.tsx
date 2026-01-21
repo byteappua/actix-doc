@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
+import { ModeToggle } from "@/components/theme/ModeToggle";
+import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
@@ -34,6 +36,25 @@ export default function SettingsPage() {
         </div>
 
         <div className="border-t pt-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-4">Appearance</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="font-medium">Theme</p>
+                  <p className="text-sm text-muted-foreground">
+                    Customize how the app looks on your device.
+                  </p>
+                </div>
+                <ModeToggle />
+              </div>
+              <div className="space-y-3">
+                <p className="font-medium">Color</p>
+                <ThemeCustomizer />
+              </div>
+            </div>
+          </div>
+
           <h3 className="text-lg font-medium mb-4">Account</h3>
           <Button
             variant="destructive"

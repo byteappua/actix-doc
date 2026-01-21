@@ -115,6 +115,42 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@utility theme-zinc {
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+@utility theme-red {
+  --primary: oklch(0.637 0.237 25.331);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.637 0.237 25.331);
+}
+
+@utility theme-orange {
+  --primary: oklch(0.661 0.218 53.692);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.661 0.218 53.692);
+}
+
+@utility theme-green {
+  --primary: oklch(0.627 0.194 149.214);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.627 0.194 149.214);
+}
+
+@utility theme-blue {
+  --primary: oklch(0.623 0.214 259.815);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.623 0.214 259.815);
+}
+
+@utility theme-violet {
+  --primary: oklch(0.558 0.288 302.321);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.558 0.288 302.321);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
