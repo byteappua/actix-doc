@@ -3,6 +3,7 @@
 import { useAuth, AuthProvider } from "@/lib/auth";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { usePathname } from "next/navigation";
+import { DocumentsProvider } from "@/components/providers/DocumentsProvider";
 
 // Internal component to use auth context
 function AuthContent({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,11 @@ function AuthContent({ children }: { children: React.ReactNode }) {
 
   // Show loading state
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   // Show children even if not authenticated (auth will handle redirect)
@@ -41,7 +46,9 @@ export default function AuthLayout({
 }) {
   return (
     <AuthProvider>
-      <AuthContent>{children}</AuthContent>
+      <DocumentsProvider>
+        <AuthContent>{children}</AuthContent>
+      </DocumentsProvider>
     </AuthProvider>
   );
 }

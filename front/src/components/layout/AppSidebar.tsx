@@ -14,9 +14,11 @@ import {
   Trash2,
   FolderPlus,
 } from "lucide-react";
-import { createDoc, fetchDocs, deleteDoc, Document } from "@/lib/api";
+import { createDoc, Document } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useDocuments } from "@/components/providers/DocumentsProvider";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   Collapsible,
   CollapsibleContent,
@@ -54,7 +56,7 @@ interface TreeItemProps {
   item: TreeDocument;
   level: number;
   onDelete: (id: string) => void;
-  router: any;
+  router: AppRouterInstance;
 }
 
 function TreeItem({ item, level, onDelete, router }: TreeItemProps) {
@@ -171,44 +173,22 @@ function TreeItem({ item, level, onDelete, router }: TreeItemProps) {
 
 export function AppSidebar({ className }: SidebarProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>([]);
-
-  useEffect(() => {
-    loadDocs();
-  }, []);
-
-  const loadDocs = async () => {
-    try {
-      const docs = await fetchDocs();
-      setDocuments(docs);
-    } catch (error) {
-      console.error("Failed to load docs:", error);
-    }
-  };
+  const { documents, createNewDoc, deleteDocument, isLoading } = useDocuments();
 
   const handleCreate = async (isFolder: boolean) => {
-    setIsLoading(true);
     try {
-      const doc = await createDoc(
-        isFolder ? "New Folder" : "Untitled",
-        isFolder,
-      );
+      const doc = await createNewDoc(isFolder);
       if (!isFolder) {
         router.push(`/documents?id=${doc.id}`);
       }
-      loadDocs();
     } catch (error) {
       console.error("Failed to create:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(id);
-      loadDocs();
+      await deleteDocument(id);
       router.push("/");
     } catch (err) {
       console.error(err);
@@ -271,7 +251,11 @@ export function AppSidebar({ className }: SidebarProps) {
           </ScrollArea>
         </div>
         <div className="mt-auto p-4 absolute bottom-0 w-full bg-background border-t">
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push("/settings")}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
