@@ -47,24 +47,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPublicPath = ["/login", "/register"].includes(pathname);
 
     if (!user && !isPublicPath) {
-      router.push("/login");
+      window.location.href = "/login.html";
     } else if (user && isPublicPath) {
-      router.push("/");
+      window.location.href = "/index.html";
     }
-  }, [user, isLoading, pathname, router]);
+  }, [user, isLoading, pathname]);
 
   const login = (token: string, username: string) => {
     localStorage.setItem("token", token);
     localStorage.setItem("username", username);
     setUser({ token, username });
-    router.push("/");
+    window.location.href = "/index.html";
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     setUser(null);
-    router.push("/login");
+    window.location.href = "/login.html";
   };
 
   return (

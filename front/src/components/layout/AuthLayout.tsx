@@ -14,8 +14,15 @@ function AuthContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Only show sidebar when authenticated and not on auth pages
-  if (!isAuthenticated && !isLoading) return null;
+  // Show loading state
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  // Show children even if not authenticated (auth will handle redirect)
+  if (!isAuthenticated) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">

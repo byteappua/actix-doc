@@ -2,24 +2,40 @@
 
 import { Button } from "@/components/ui/button";
 import { createDoc } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import dynamic from "next/dynamic";
 
-export default function Home() {
+const Editor = dynamic(() => import("@/components/editor/Editor").then(mod => ({ default: mod.Editor })), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full">Loading editor...</div>
+});
+
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const docId = searchParams.get("id");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreate = async () => {
     setIsLoading(true);
     try {
       const doc = await createDoc("Untitled");
-      router.push(`/documents/${doc.id}`);
+      router.push(`/?id=${doc.id}`);
     } catch (error) {
       console.error("Failed to create document:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (docId) {
+    return (
+      <div className="h-full">
+        <Editor />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-[80vh] space-y-4">
@@ -35,5 +51,13 @@ export default function Home() {
         {isLoading ? "Creating..." : "Create Document"}
       </Button>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
