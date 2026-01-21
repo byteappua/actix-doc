@@ -12,21 +12,36 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { createDoc } from "@/lib/api";
+import { createDoc, fetchDocs, Document } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function AppSidebar({ className }: SidebarProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
+
+  useEffect(() => {
+    loadDocs();
+  }, []);
+
+  const loadDocs = async () => {
+    try {
+      const docs = await fetchDocs();
+      setDocuments(docs);
+    } catch (error) {
+      console.error("Failed to load docs:", error);
+    }
+  };
 
   const handleCreate = async () => {
     setIsLoading(true);
     try {
       const doc = await createDoc("Untitled");
       router.push(`/documents/${doc.id}`);
+      loadDocs(); // Refresh list
     } catch (error) {
       console.error("Failed to create document:", error);
     } finally {
@@ -59,31 +74,23 @@ export function AppSidebar({ className }: SidebarProps) {
           </h2>
           <ScrollArea className="h-[300px] px-1">
             <div className="space-y-1 p-2">
-              {/* Mock Items */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start font-normal"
-              >
-                <Folder className="mr-2 h-4 w-4" />
-                Projects
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start font-normal pl-6"
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Q1 Planning
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start font-normal"
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Personal Notes
-              </Button>
+              {documents.length === 0 && (
+                <p className="text-sm text-muted-foreground px-4">
+                  No documents yet.
+                </p>
+              )}
+              {documents.map((doc) => (
+                <Button
+                  key={doc.id}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start font-normal"
+                  onClick={() => router.push(`/documents/${doc.id}`)}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {doc.title}
+                </Button>
+              ))}
             </div>
           </ScrollArea>
         </div>
