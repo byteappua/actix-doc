@@ -40,7 +40,7 @@ export function AppSidebar({ className }: SidebarProps) {
     setIsLoading(true);
     try {
       const doc = await createDoc("Untitled");
-      router.push(`/documents/${doc.id}`);
+      router.push(`/?id=${doc.id}`);
       loadDocs(); // Refresh list
     } catch (error) {
       console.error("Failed to create document:", error);
@@ -85,7 +85,7 @@ export function AppSidebar({ className }: SidebarProps) {
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start font-normal"
-                  onClick={() => router.push(`/documents/${doc.id}`)}
+                  onClick={() => router.push(`/?id=${doc.id}`)}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   {doc.title}
