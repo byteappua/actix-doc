@@ -1,0 +1,18 @@
+[book]
+title = "Actix+Next.js 文档管理系统"
+authors = ["Actix-Doc Team"]
+language = "zh-CN"
+multilingual = false
+src = "docs"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "rust"
+git-repository-url = "https://github.com/yourusername/actix-doc"
+edit-url-template = "https://github.com/yourusername/actix-doc/edit/main/{path}"
+
+[output.html.fold]
+enable = true
+level = 0

@@ -18,3 +18,7 @@ data.db
 # IDE
 .vscode/
 .idea/
+
+# mdBook
+book/
+
