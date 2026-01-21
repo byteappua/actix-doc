@@ -156,7 +156,7 @@ RUST_LOG=info
 项目使用 `build.rs` 实现自动化：
 
 - ✅ `cargo build` 时自动检测 `front/out` 是否存在
-- ✅ 如不存在，自动运行 `npm install` 和 `npm run build`
+- ✅ 如不存在，自动运行 `pnpm install` 和 `pnpm run build`
 - ✅ 自动复制构建产物到 `static/` 目录
 - ✅ 智能检测 `front/src` 文件变化并重新构建
 
