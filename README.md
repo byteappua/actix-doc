@@ -38,7 +38,6 @@ cd actix-doc
 1. **启动后端**
 
 ```bash
-cd server
 cargo run
 ```
 
@@ -47,7 +46,7 @@ cargo run
 1. **启动前端** (新终端)
 
 ```bash
-cd client
+cd front
 npm install
 npm run dev
 ```
@@ -62,20 +61,20 @@ npm run dev
 1. **构建前端**
 
 ```bash
-cd client
+cd front
 npm run build
 ```
 
 1. **复制静态文件**
 
 ```bash
-cp -r out/* ../server/static/
+cp -r out/* ../static/
 ```
 
 1. **运行服务器**
 
 ```bash
-cd ../server
+cd ..
 cargo run --release
 ```
 
@@ -85,26 +84,26 @@ cargo run --release
 
 ```
 actix-doc/
-├── server/          # Rust 后端
+├── src/             # Rust 后端源代码
+│   ├── main.rs      # 入口
+│   ├── auth.rs      # 认证模块
+│   ├── docs.rs      # 文档 CRUD
+│   ├── models.rs    # 数据模型
+│   └── ...
+├── migrations/      # 数据库迁移
+├── static/          # 前端静态文件（生产）
+├── front/           # Next.js 前端源代码
 │   ├── src/
-│   │   ├── main.rs      # 入口
-│   │   ├── auth.rs      # 认证模块
-│   │   ├── docs.rs      # 文档 CRUD
-│   │   ├── models.rs    # 数据模型
-│   │   └── ...
-│   ├── migrations/      # 数据库迁移
-│   └── Cargo.toml
-└── client/          # Next.js 前端
-    ├── src/
-    │   ├── app/         # App Router 页面
-    │   ├── components/  # UI 组件
-    │   └── lib/         # 工具函数
-    └── package.json
+│   │   ├── app/         # App Router 页面
+│   │   ├── components/  # UI 组件
+│   │   └── lib/         # 工具函数
+│   └── package.json
+└── Cargo.toml
 ```
 
 ## 🔑 环境变量
 
-在 `server/.env` 中配置：
+在根目录 `.env` 中配置：
 
 ```env
 DATABASE_URL=sqlite:./data.db

@@ -1,18 +1,18 @@
 # Rust / Actix
-/server/target/
-/server/**/*.rs.bk
-/server/Cargo.lock
-/server/.env
-/server/static/
-/server/*.db
-/server/data.db
+/target/
+**/*.rs.bk
+Cargo.lock
+.env
+/static/
+*.db
+data.db
 
 # Node / Next.js
-/client/node_modules/
-/client/.next/
-/client/out/
-/client/build/
-/client/.ds_store
+/front/node_modules/
+/front/.next/
+/front/out/
+/front/build/
+/front/.ds_store
 *.log
 
 # IDE
