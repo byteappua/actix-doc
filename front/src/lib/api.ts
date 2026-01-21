@@ -11,8 +11,43 @@ export interface Document {
   updated_at: string;
 }
 
+function getHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+export async function login(data: any) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Login failed");
+  return res.json();
+}
+
+export async function register(data: any) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Registration failed");
+  return res.json();
+}
+
 export async function fetchDocs(): Promise<Document[]> {
-  const res = await fetch(`${API_URL}/documents`);
+  const res = await fetch(`${API_URL}/documents`, {
+    headers: getHeaders(),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
   if (!res.ok) throw new Error("Failed to fetch docs");
   return res.json();
 }
@@ -24,12 +59,12 @@ export async function createDoc(
 ): Promise<Document> {
   const res = await fetch(`${API_URL}/documents`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({
       title,
       is_folder,
       parent_id,
-      owner_id: "demo-user", // Temporary
+      // owner_id is handled by backend from token claims
       content: "",
     }),
   });
