@@ -12,7 +12,6 @@ pub struct CreateDocRequest {
     pub content: Option<String>,
     pub parent_id: Option<String>,
     pub is_folder: bool,
-    pub owner_id: String, // TODO: Get from JWT
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,11 +48,44 @@ pub async fn get_doc(
     Ok(HttpResponse::Ok().json(doc))
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+    iat: usize,
+}
+
 #[post("/documents")]
 pub async fn create_doc(
     pool: web::Data<DbPool>,
     req: web::Json<CreateDocRequest>,
+    http_req: actix_web::HttpRequest,
 ) -> Result<HttpResponse, ServiceError> {
+    // 1. Extract Token
+    let auth_header = http_req
+        .headers()
+        .get("Authorization")
+        .ok_or(ServiceError::Unauthorized("No token provided".into()))?
+        .to_str()
+        .map_err(|_| ServiceError::Unauthorized("Invalid token format".into()))?;
+
+    let token = auth_header
+        .strip_prefix("Bearer ")
+        .ok_or(ServiceError::Unauthorized("Invalid token format".into()))?;
+
+    // 2. Decode Token
+    let jwt_secret = std::env::var("JWT_SECRET")
+        .unwrap_or_else(|_| "dev_fallback_secret_key_change_me".to_string());
+
+    let key = jsonwebtoken::DecodingKey::from_secret(jwt_secret.as_ref());
+    let validation = jsonwebtoken::Validation::default();
+
+    let token_data = jsonwebtoken::decode::<Claims>(token, &key, &validation)
+        .map_err(|_| ServiceError::Unauthorized("Invalid token".into()))?;
+
+    let user_id = token_data.claims.sub;
+
+    // 3. Create Document
     let id = Uuid::new_v4().to_string();
 
     let _ = query!(
@@ -62,7 +94,7 @@ pub async fn create_doc(
         req.title,
         req.content,
         req.parent_id,
-        req.owner_id,
+        user_id, // Use extracted user_id
         req.is_folder
     )
     .execute(pool.get_ref())
