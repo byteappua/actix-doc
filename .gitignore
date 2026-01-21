@@ -22,3 +22,5 @@ data.db
 # mdBook
 book/
 
+data.db-shm
+data.db-wal
