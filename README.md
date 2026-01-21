@@ -163,9 +163,17 @@ RUST_LOG=info
 **手动控制前端重建**:
 
 ```bash
-# 强制重建前端
+# Windows CMD
+set REBUILD_FRONT=1 && cargo build
+
+# Windows PowerShell
+$env:REBUILD_FRONT=1; cargo build
+
+# Linux/macOS
 REBUILD_FRONT=1 cargo build
 ```
+
+> 💡 **提示**: 如果删除了 `front/out` 或 `static/` 目录，使用此命令强制重新构建前端。
 
 ## 🔑 环境变量
 
